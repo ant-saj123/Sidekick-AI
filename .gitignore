@@ -1,25 +1,10 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
-*.py[cod]
-*.pyo
-
-# Virtual environment
-.venv/
-venv/
-env/
+*.pyc
+*.log
 
 # Environment variables
 .env
 
-# Google credentials
-credentials.json
-credentials1.json
-
-# OS files
-.DS_Store
-
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints/
-
-# VSCode settings (optional)
-.vscode/ 
+# Google API tokens
+token.pickle 
