@@ -1,27 +1,27 @@
-# Byte-compiled / optimized / DLL files
+# Python bytecode and logs
 __pycache__/
 *.py[cod]
-*.pyo
+*.log
 
-# Virtual environment
+# Virtual environment directories
 .venv/
 venv/
 env/
 
-# Environment variables
+# Environment variables file
 .env
 
-# Google credentials
+# Google API credentials and tokens (CRITICAL: DO NOT COMMIT THESE)
+token.pickle
 credentials.json
 credentials1.json
 
-# OS files
+# Operating System generated files
 .DS_Store
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
-# VSCode settings (optional)
-.vscode/ 
+# VSCode settings (optional, uncomment if you want to ignore)
+# .vscode/
 
-token.pickle
