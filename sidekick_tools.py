@@ -24,6 +24,13 @@ from youtubesearchpython import VideosSearch
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
+#Gmail tool integration
+import base64
+from email.mime.text import MIMEText
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+import pickle
+
 
 
 load_dotenv(override=True)
@@ -44,6 +51,41 @@ def push(text: str):
     requests.post(pushover_url, data = {"token": pushover_token, "user": pushover_user, "message": text})
     return "success"
 
+def send_gmail(recipient: str, subject: str, body: str):
+    """
+    Send an email using Gmail API.
+    Args:
+        recipient: Email address of the recipient.
+        subject: Subject of the email.
+        body: Body of the email.
+    """
+    SCOPES = ['https://www.googleapis.com/auth/gmail.send']
+    creds = None
+    # The file token.pickle stores the user's access and refresh tokens
+    if os.path.exists('token.pickle'):
+        with open('token.pickle', 'rb') as token:
+            creds = pickle.load(token)
+    # If there are no (valid) credentials, let the user log in.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES) # This should be your OAuth2 Desktop App credentials.json
+            creds = flow.run_local_server(port=0)
+        # Save the credentials for the next run
+        with open('token.pickle', 'wb') as token:
+            pickle.dump(creds, token)
+
+    service = build('gmail', 'v1', credentials=creds)
+    message = MIMEText(body)
+    message['to'] = recipient
+    message['subject'] = subject
+    raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
+    message = {'raw': raw}
+    sent_message = service.users().messages().send(userId='me', body=message).execute()
+    return f"Email sent to {recipient} with id: {sent_message['id']}"
+
 def create_calendar_event(args: str):
     """
     Create a Google Calendar event.
@@ -59,7 +101,7 @@ def create_calendar_event(args: str):
         description = parts[3] if len(parts) > 3 else ""
         # (rest of your code, using summary, start_time, end_time, description)
         credentials = service_account.Credentials.from_service_account_file(
-            os.getenv("GOOGLE_APPLICATION_CREDENTIALS"),
+            os.getenv("GOOGLE_APPLICATION_CREDENTIALS"), # This should be your Service Account credentials1.json
             scopes=['https://www.googleapis.com/auth/calendar']
         )
         service = build('calendar', 'v3', credentials=credentials)
@@ -220,6 +262,13 @@ async def other_tools():
     youtube_tool = Tool(name="youtube_search", func=search_youtube, description="Use this tool when you want to find a youtube video")
     file_tools = get_file_tools()
 
+    #Gmail tool
+    gmail_tool = Tool(
+        name="send_gmail",
+        func=lambda args: send_gmail(*[a.strip() for a in args.split(',', 2)]),
+        description="Send an email via Gmail. Use format: recipient_email, subject, body"
+    )
+
     # Calendar tools (only if credentials are set up)
     calendar_tools = []
     if os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
@@ -251,5 +300,5 @@ async def other_tools():
 
     python_repl = PythonREPLTool()
     
-    return file_tools + [push_tool, pdf_tool, youtube_tool] + calendar_tools + [tool_search, python_repl, wiki_tool]
+    return file_tools + [push_tool, pdf_tool, youtube_tool] + calendar_tools + [tool_search, python_repl, wiki_tool, gmail_tool] 
 

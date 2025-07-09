@@ -13,6 +13,7 @@ env/
 
 # Google credentials
 credentials.json
+credentials1.json
 
 # OS files
 .DS_Store
